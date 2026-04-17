@@ -1,0 +1,1 @@
+FROM library/postgres:17.5-bookworm

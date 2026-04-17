@@ -1,0 +1,106 @@
+services:
+  # Backend:
+
+  api:
+    container_name: api
+    environment:
+      - API_PORT=:5222
+      - LOG_LEVEL=debug
+      - DB_CONNECTION_STRING=postgres://admin:Avanp0st@show-postgres/show?sslmode=disable
+      - AWS_ACCESS_KEY_ID=minioadmin
+      - AWS_SECRET_ACCESS_KEY=minioadmin
+      - AWS_ENDPOINT_URL=http://minio:9000
+      - AWS_REGION=us-east-2
+      - NATS_URL=nats://show-nats:4222
+      - NATS_LOGIN=nats_login
+      - NATS_PASSWORD=nats_password
+    build:
+      context: .
+      dockerfile: docker/api.dockerfile
+    pull_policy: build
+    ports:
+      - 5222:5222
+    depends_on:
+      show-postgres:
+        condition: service_healthy
+      show-nats:
+        condition: service_healthy
+    links:
+      - show-postgres
+    restart: always
+    networks: [show-services]
+
+  show-postgres:
+    container_name: show-postgres
+    build:
+      context: .
+      dockerfile: docker/postgres.dockerfile
+    pull_policy: build
+    expose:
+      - 5432
+    ports:
+      - 5437:5432
+    restart: always
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=Avanp0st
+      - POSTGRES_DB=show
+      - POSTGRES_HOST=5432
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin -d show " ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: -p 5432
+    volumes:
+      - show-pg-data:/var/lib/postgresql/data
+    networks: [ show-services ]
+
+  show-nats:
+    container_name: show-nats
+    build:
+      context: .
+      dockerfile: docker/nats.dockerfile
+    pull_policy: build
+    ports:
+      - "4225:4222"
+      - "8225:8222"
+    command: [
+      "-js",
+      "--store_dir=/data/jetstream",
+      "--user", "nats_login",
+      "--pass", "nats_password",
+      "--http_port", "8222",
+      "--addr", "0.0.0.0",
+    ]
+    healthcheck:
+      test: [ "CMD", "nats-server", "-sl" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: always
+    volumes:
+      - show-nats-data:/data
+    networks: [ show-services ]
+
+  migrate:
+    container_name: migrate-postgres-show
+    image: migrate/migrate:v4.18.2
+    networks: [ show-services ]
+    volumes:
+      - ./migration:/migration
+    entrypoint: [ "migrate", "-path", "/migration/postgres", "-database", "postgres://admin:Avanp0st@show-postgres/show?sslmode=disable" ]
+    command: [ up ]
+    links:
+      - show-postgres
+    depends_on:
+      show-postgres:
+        condition: service_healthy
+
+networks:
+  show-services:
+    name: show-services
+
+volumes:
+  show-pg-data:
+  show-nats-data:

@@ -1,0 +1,28 @@
+service_name: api_admin_console # имя сервиса
+http:
+  port: :5222 # порт сервиса
+  base_api: /api/v1 # базовый url api
+  signing_key: P@ssw0rd # ключ для подписи jwt токенов
+db:
+  connection_string: postgres://admin:Avanp0st@localhost/pam-develop?sslmode=disable # подключение к БД
+  pool_max_conns: 20
+  pool_min_conns: 5
+  pool_health_check_period_milliseconds: 60000
+  pool_max_conn_idle_time_milliseconds: 60000
+  pool_max_conn_lifetime_milliseconds: 180000
+vault_client:
+  server_addr: localhost:8010 # адрес сервиса vault
+  tls: true # optional
+  token: "grpc_secret"
+log_level: debug # уровень логирования сервиса
+nats:
+  url: nats://127.0.0.1:4222 # адрес брокера сообщений NATS
+  login: "nats_login" # логин для аутентификации клиентов NATS
+  password: "nats_password" # пароль для аутентификации клиентов NATS
+  replicas: 1 # количество нод в кластере NATS
+minio:
+  awsAccessKeyId: "minioadmin" # логин minio
+  awsSecretAccessKey: "minioadmin" # пароль minio
+  awsEndpointUrl: "http://localhost:9000" # url подключения к minio
+  replaysBucket: "replays" # бакет для записей сессий
+

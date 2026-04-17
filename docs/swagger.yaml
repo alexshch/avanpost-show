@@ -1,0 +1,212 @@
+definitions:
+  entity.Message:
+    properties:
+      message:
+        type: string
+    type: object
+  entity.User:
+    properties:
+      createdAt:
+        type: string
+      email:
+        type: string
+      firstname:
+        type: string
+      id:
+        type: string
+      isActive:
+        type: boolean
+      lastname:
+        type: string
+      lockedAt:
+        type: string
+      middlename:
+        type: string
+      updatedAt:
+        type: string
+      username:
+        type: string
+    type: object
+  entity.UserEdit:
+    properties:
+      email:
+        type: string
+      firstname:
+        type: string
+      lastname:
+        type: string
+      middlename:
+        type: string
+      username:
+        type: string
+    type: object
+  entity.UserShort:
+    properties:
+      fullName:
+        type: string
+      id:
+        type: string
+      isActive:
+        type: boolean
+      username:
+        type: string
+    type: object
+  entity.UsersPaged:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/entity.UserShort'
+        type: array
+      pageIndex:
+        type: integer
+      pageSize:
+        type: integer
+      total:
+        type: integer
+    type: object
+info:
+  contact: {}
+paths:
+  /users:
+    get:
+      description: Get user paged list
+      parameters:
+      - description: page number
+        in: query
+        name: pageIndex
+        type: string
+      - description: number of elements
+        in: query
+        name: pageSize
+        type: string
+      - description: searching user by username, name
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.UsersPaged'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/entity.Message'
+      summary: Get user paged list
+      tags:
+      - User
+    post:
+      consumes:
+      - application/json
+      description: Create user
+      parameters:
+      - description: user
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/entity.UserEdit'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entity.User'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/entity.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/entity.Message'
+      summary: Create user
+      tags:
+      - User
+  /users/{id}:
+    delete:
+      description: Delete user
+      parameters:
+      - description: user ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/entity.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/entity.Message'
+      summary: Delete user
+      tags:
+      - User
+    get:
+      description: Get user by user id
+      parameters:
+      - description: user ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.User'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/entity.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/entity.Message'
+      summary: Get user by id
+      tags:
+      - User
+    put:
+      consumes:
+      - application/json
+      description: Update user
+      parameters:
+      - description: user ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: user body
+        in: body
+        name: rule
+        required: true
+        schema:
+          $ref: '#/definitions/entity.UserEdit'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/entity.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/entity.Message'
+      summary: Update user
+      tags:
+      - User
+swagger: "2.0"
